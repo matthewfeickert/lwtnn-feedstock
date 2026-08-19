@@ -10,7 +10,7 @@ source:
   sha256: 0add0992cf59998a95fa024df4343b6c05d77f7e22c37ec012d9b1fcee4f1f71
 
 build:
-  number: 2
+  number: 3
   skip:
     - win
   script:
@@ -151,7 +151,18 @@ tests:
       - git checkout 70855aba8650da344d05eb65687e8224e594c8e3
       - sed -i 's|../test_NN.json|./test_NN.json|g' ./Sequential/AnalysisBase/testExec.cxx
       - cd Sequential/AnalysisBase
-      - $CXX ./testExec.cxx -o testExec $CXXFLAGS -I$CONDA_PREFIX/include/eigen3 $LDFLAGS -llwtnn
+      # cxx-compiler v2+ does not set environment variables (CXX, CXXFLAGS,
+      # LDFLAGS), so invoke the platform specific compiler by path and pass the
+      # prefix include and lib flags explicitly.
+      # c.f. https://github.com/conda-forge/conda-forge.github.io/issues/2595
+      - if: linux
+        then: CXX="${CONDA_PREFIX}/bin/g++"
+      - if: osx
+        then: CXX="${CONDA_PREFIX}/bin/clang++"
+      - >-
+        ${CXX} ./testExec.cxx -o testExec
+        -I${CONDA_PREFIX}/include -I${CONDA_PREFIX}/include/eigen3
+        -L${CONDA_PREFIX}/lib -Wl,-rpath,${CONDA_PREFIX}/lib -llwtnn
       - ./testExec
 
 about:
