@@ -32,6 +32,7 @@ requirements:
     - make
   host:
     - libboost-devel
+    # FIXME: Restricted to Eigen v3 series in variants.yaml
     - eigen-abi-devel
   run:
     - eigen
